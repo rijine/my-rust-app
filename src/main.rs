@@ -1,7 +1,8 @@
 use std::net::SocketAddr;
 use axum::response::{Html, IntoResponse};
-use axum::{Router, ServiceExt};
+use axum::{middleware, Router, ServiceExt};
 use axum::extract::{Path, Query};
+use axum::http::Response;
 use axum::routing::{get, get_service};
 use serde::Deserialize;
 use tower_http::services::ServeDir;
@@ -17,6 +18,7 @@ async fn main() {
     let routes = Router::new()
         .merge(hello_routes())
         .merge(router_login())
+        .layer(middleware::map_response(main_response_mapper))
         .fallback_service(routes_static());
 
 
@@ -28,6 +30,11 @@ async fn main() {
     // Tryouts
     // structs();
     // enums();
+}
+
+async fn main_response_mapper<T>(res: Response<T>) -> Response<T> {
+    println!("response: {:<12} - main_response_mapper layer", "RES_MAPPER");
+    res
 }
 
 fn routes_static() -> Router {
