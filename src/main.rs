@@ -6,13 +6,17 @@ use axum::routing::{get, get_service};
 use serde::Deserialize;
 use tower_http::services::ServeDir;
 use crate::examples::{enums, structs};
-
+use crate::web::router_login::router_login;
+pub use self::error::{Error, Result};
 mod examples;
-
+mod error;
+mod web;
 
 #[tokio::main]
 async fn main() {
-    let routes = Router::new().merge(hello_routes())
+    let routes = Router::new()
+        .merge(hello_routes())
+        .merge(router_login())
         .fallback_service(routes_static());
 
 
