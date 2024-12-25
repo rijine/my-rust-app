@@ -2,8 +2,9 @@ use std::net::SocketAddr;
 use axum::response::{Html, IntoResponse};
 use axum::{Router, ServiceExt};
 use axum::extract::{Path, Query};
-use axum::routing::get;
+use axum::routing::{get, get_service};
 use serde::Deserialize;
+use tower_http::services::ServeDir;
 use crate::examples::{enums, structs};
 
 mod examples;
@@ -11,9 +12,8 @@ mod examples;
 
 #[tokio::main]
 async fn main() {
-    let routes = Router::new()
-        .route("/hello", get(handler_hello))
-        .route("/hello_path/:name", get(handler_hello_with_path));
+    let routes = Router::new().merge(hello_routes())
+        .fallback_service(routes_static());
 
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
@@ -24,6 +24,16 @@ async fn main() {
     // Tryouts
     // structs();
     // enums();
+}
+
+fn routes_static() -> Router {
+    Router::new().nest_service("/", get_service(ServeDir::new("./public/")))
+}
+
+fn hello_routes() -> Router {
+    Router::new()
+        .route("/hello", get(handler_hello))
+        .route("/hello_path/:name", get(handler_hello_with_path))
 }
 
 #[derive(Debug, Deserialize)]
