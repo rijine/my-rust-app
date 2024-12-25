@@ -5,6 +5,7 @@ use axum::extract::{Path, Query};
 use axum::http::Response;
 use axum::routing::{get, get_service};
 use serde::Deserialize;
+use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 use crate::examples::{enums, structs};
 use crate::web::router_login::router_login;
@@ -19,6 +20,7 @@ async fn main() {
         .merge(hello_routes())
         .merge(router_login())
         .layer(middleware::map_response(main_response_mapper))
+        .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 
 
